@@ -1,10 +1,12 @@
 // ignore_for_file: prefer_final_fields, prefer_const_constructors_in_immutables
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
-import 'transaksi.dart'; // Import the new TransaksiScreen
-import 'main.dart'; // Import main.dart untuk navigasi logout
+import 'transaksi.dart';
+import 'main.dart';
 
 class RotiScreen extends StatefulWidget {
+  const RotiScreen({Key? key}) : super(key: key);
+
   @override
   _RotiScreenState createState() => _RotiScreenState();
 }
@@ -69,29 +71,28 @@ class _RotiScreenState extends State<RotiScreen> {
           return {
             'id': doc.data['id']?.toString() ?? '',
             'nama': doc.data['nama']?.toString() ?? 'Unnamed',
-            'harga': doc.data['harga'] ?? 0,
+            'harga': (doc.data['harga'] is num) ? doc.data['harga'].toInt() : 0,
             'lokasi': doc.data['lokasi']?.toString() ?? 'Unknown',
-            'gambar': _defaultImageUrl,
-            'deskripsi': 'Roti lezat dari ${doc.data['lokasi'] ?? 'toko kami'}',
+            'gambar': doc.data['images']?.toString() ?? _defaultImageUrl,
+            'deskripsi': doc.data['deskripsi']?.toString() ??
+                'Roti lezat dari ${doc.data['lokasi'] ?? 'toko kami'}',
           };
         }).toList();
         _isLoading = false;
       });
 
       if (_rotiList.isEmpty) {
-        print('No documents found. Using dummy data.');
         setState(() {
           _rotiList = _dummyRotiList;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Gagal memuat data roti, menggunakan data dummy.'),
             backgroundColor: Colors.orange,
           ),
         );
       }
-    } catch (e, stackTrace) {
-      print('Error fetching data: $e\n$stackTrace');
+    } catch (e) {
       setState(() {
         _rotiList = _dummyRotiList;
         _isLoading = false;
@@ -112,7 +113,7 @@ class _RotiScreenState extends State<RotiScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$nama ditambahkan ke keranjang!'),
-        backgroundColor: Colors.pink[300],
+        backgroundColor: const Color(0xFFF02E65),
       ),
     );
   }
@@ -133,12 +134,12 @@ class _RotiScreenState extends State<RotiScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Konfirmasi Logout'),
-        content: Text('Anda yakin ingin log out?'),
+        title: const Text('Konfirmasi Logout'),
+        content: const Text('Anda yakin ingin log out?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Tidak'),
+            child: const Text('Tidak'),
           ),
           TextButton(
             onPressed: () {
@@ -148,7 +149,7 @@ class _RotiScreenState extends State<RotiScreen> {
                 (Route<dynamic> route) => false,
               );
             },
-            child: Text('Ya'),
+            child: const Text('Ya'),
           ),
         ],
       ),
@@ -159,14 +160,25 @@ class _RotiScreenState extends State<RotiScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Toko Roti', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.pink[400],
+        title: const Text(
+          'Toko Roti',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFF02E65), Color(0xFF4A4A4F)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         elevation: 0,
         actions: [
           Stack(
             children: [
               IconButton(
-                icon: Icon(Icons.shopping_cart, color: Colors.white),
+                icon: const Icon(Icons.shopping_cart, color: Colors.white),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -175,7 +187,7 @@ class _RotiScreenState extends State<RotiScreen> {
                         cart: _cart,
                         rotiList: _rotiList,
                         orderHistory: _orderHistory,
-                        showHistory: false, // Buka keranjang
+                        showHistory: false,
                       ),
                     ),
                   );
@@ -186,21 +198,21 @@ class _RotiScreenState extends State<RotiScreen> {
                   right: 8,
                   top: 8,
                   child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       _cart.values.fold(0, (sum, qty) => sum + qty).toString(),
-                      style: TextStyle(color: Colors.white, fontSize: 12),
+                      style: const TextStyle(color: Color(0xFFF02E65), fontSize: 12),
                     ),
                   ),
                 ),
             ],
           ),
           IconButton(
-            icon: Icon(Icons.history, color: Colors.white),
+            icon: const Icon(Icons.history, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
@@ -209,7 +221,7 @@ class _RotiScreenState extends State<RotiScreen> {
                     cart: _cart,
                     rotiList: _rotiList,
                     orderHistory: _orderHistory,
-                    showHistory: true, // Buka riwayat
+                    showHistory: true,
                   ),
                 ),
               );
@@ -218,20 +230,31 @@ class _RotiScreenState extends State<RotiScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.pink[400]))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFF02E65)),
+            )
           : Column(
               children: [
                 Container(
-                  padding: EdgeInsets.all(16.0),
-                  color: Colors.pink[300],
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF02E65),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.store, color: Colors.white),
-                      SizedBox(width: 8.0),
+                      const Icon(Icons.store, color: Colors.white),
+                      const SizedBox(width: 8.0),
                       Expanded(
                         child: Text(
                           'Lokasi Toko: Surabaya',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                          style: const TextStyle(color: Colors.white, fontSize: 16),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -240,10 +263,10 @@ class _RotiScreenState extends State<RotiScreen> {
                 ),
                 Expanded(
                   child: _rotiList.isEmpty
-                      ? Center(child: Text('Tidak ada data roti tersedia.'))
+                      ? const Center(child: Text('Tidak ada data roti tersedia.'))
                       : GridView.builder(
-                          padding: EdgeInsets.all(8.0),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          padding: const EdgeInsets.all(8.0),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             crossAxisSpacing: 8.0,
                             mainAxisSpacing: 8.0,
@@ -252,11 +275,11 @@ class _RotiScreenState extends State<RotiScreen> {
                           itemCount: _rotiList.length,
                           itemBuilder: (context, index) {
                             final roti = _rotiList[index];
-                            return GestureDetector(
+                            return InkWell(
                               onTap: () => _showDescriptionDialog(context, roti),
                               child: Card(
                                 elevation: 4,
-                                color: Colors.pink[50],
+                                color: Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -264,15 +287,15 @@ class _RotiScreenState extends State<RotiScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     ClipRRect(
-                                      borderRadius: BorderRadius.vertical(
+                                      borderRadius: const BorderRadius.vertical(
                                           top: Radius.circular(12)),
                                       child: Image.network(
-                                        roti['gambar'],
+                                        roti['gambar'] ?? _defaultImageUrl,
                                         height: 120,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) => Icon(
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            const Icon(
                                           Icons.broken_image,
                                           color: Colors.grey,
                                           size: 50,
@@ -280,57 +303,59 @@ class _RotiScreenState extends State<RotiScreen> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.all(8.0),
+                                      padding: const EdgeInsets.all(8.0),
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            roti['nama'],
-                                            style: TextStyle(
+                                            roti['nama'] ?? 'Unnamed',
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.pink[800],
+                                              color: Color(0xFFF02E65),
                                               fontSize: 14,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          SizedBox(height: 4),
+                                          const SizedBox(height: 4),
                                           Text(
-                                            'Rp ${roti['harga']}',
-                                            style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 12),
+                                            'Rp ${roti['harga'] ?? 0}',
+                                            style: const TextStyle(
+                                              color: Color(0xFF4A4A4F),
+                                              fontSize: 12,
+                                            ),
                                           ),
                                           Text(
-                                            roti['lokasi'],
-                                            style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 12),
+                                            roti['lokasi'] ?? 'Unknown',
+                                            style: const TextStyle(
+                                              color: Color(0xFF4A4A4F),
+                                              fontSize: 12,
+                                            ),
                                           ),
-                                          SizedBox(height: 8),
+                                          const SizedBox(height: 8),
                                           Align(
                                             alignment: Alignment.centerRight,
                                             child: ElevatedButton(
                                               onPressed: () {
                                                 _addToCart(
-                                                    roti['nama'], roti['harga']);
+                                                  roti['nama'] ?? 'Unnamed',
+                                                  roti['harga'] ?? 0,
+                                                );
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    Colors.pink[400],
+                                                backgroundColor: const Color(0xFFF02E65),
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
+                                                  borderRadius: BorderRadius.circular(8),
                                                 ),
-                                                padding: EdgeInsets.symmetric(
+                                                padding: const EdgeInsets.symmetric(
                                                     horizontal: 8, vertical: 4),
                                               ),
-                                              child: Text(
+                                              child: const Text(
                                                 'Tambah',
                                                 style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12),
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -348,9 +373,10 @@ class _RotiScreenState extends State<RotiScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showLogoutDialog,
-        backgroundColor: Colors.pink[400],
+        backgroundColor: const Color(0xFFF02E65),
         mini: true,
-        child: Icon(Icons.logout, color: Colors.white),
+        tooltip: 'Logout',
+        child: const Icon(Icons.logout, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -361,51 +387,71 @@ class _DescriptionPage extends StatelessWidget {
   final Map<String, dynamic> roti;
   final VoidCallback onAddToCart;
 
-  _DescriptionPage({required this.roti, required this.onAddToCart});
+  const _DescriptionPage({Key? key, required this.roti, required this.onAddToCart})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(roti['nama'], style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.pink[400],
+        title: Text(
+          roti['nama'] ?? 'Unnamed',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFF02E65), Color(0xFF4A4A4F)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  roti['gambar'],
+                  roti['gambar'] ?? 'https://th.bing.com/th/id/OIP.fS97PLWosq8Lm7d6IWNrVQHaHa?rs=1&pid=ImgDetMain',
                   width: double.infinity,
                   height: 200,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Icon(
+                  errorBuilder: (context, error, stackTrace) => const Icon(
                     Icons.broken_image,
                     color: Colors.grey,
                     size: 50,
                   ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
-                roti['nama'],
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.pink[800]),
+                roti['nama'] ?? 'Unnamed',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFF02E65),
+                ),
               ),
-              SizedBox(height: 8),
-              Text(roti['deskripsi'], style: TextStyle(color: Colors.grey[800])),
-              SizedBox(height: 8),
-              Text('Harga: Rp ${roti['harga']}',
-                  style: TextStyle(color: Colors.pink[600])),
-              Text('Lokasi: ${roti['lokasi']}',
-                  style: TextStyle(color: Colors.pink[600])),
-              SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Text(
+                roti['deskripsi'] ?? 'Deskripsi tidak tersedia.',
+                style: const TextStyle(color: Color(0xFF4A4A4F)),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Harga: Rp ${roti['harga'] ?? 0}',
+                style: const TextStyle(color: Color(0xFFF02E65)),
+              ),
+              Text(
+                'Lokasi: ${roti['lokasi'] ?? 'Unknown'}',
+                style: const TextStyle(color: Color(0xFFF02E65)),
+              ),
+              const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerRight,
                 child: ElevatedButton(
@@ -414,13 +460,15 @@ class _DescriptionPage extends StatelessWidget {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink[400],
+                    backgroundColor: const Color(0xFFF02E65),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text('Tambah ke Keranjang',
-                      style: TextStyle(color: Colors.white)),
+                  child: const Text(
+                    'Tambah ke Keranjang',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],

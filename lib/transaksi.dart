@@ -33,12 +33,37 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       ..setProject('684a553a0011273f7c07')
       ..setSelfSigned(status: true);
     _databases = Databases(_client);
+    _fetchTransactionData(); // Memuat data transaksi saat init
+  }
+
+  Future<void> _fetchTransactionData() async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: '684a556400142abfb7ab',
+        collectionId: '684a908600060ad5d7a0',
+      );
+      setState(() {
+        widget.orderHistory.clear(); // Kosongkan riwayat lokal terlebih dahulu
+        widget.orderHistory.addAll(response.documents.map((doc) {
+          return {
+            'id': doc.data['id']?.toString() ?? 'Unknown',
+            'name': doc.data['name']?.toString() ?? 'Unknown',
+            'alamat': doc.data['alamat']?.toString() ?? 'Unknown',
+            'total': (doc.data['total'] is num) ? doc.data['total'].toDouble() : 0.0,
+          };
+        }).toList());
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat riwayat: $e')),
+      );
+    }
   }
 
   Future<void> _checkout(BuildContext context) async {
     if (_nameController.text.isEmpty || _alamatController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Nama dan alamat wajib diisi!')),
+        const SnackBar(content: Text('Nama dan alamat wajib diisi!')),
       );
       return;
     }
@@ -82,7 +107,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       widget.cart.clear();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Checkout berhasil!')),
+        const SnackBar(content: Text('Checkout berhasil!')),
       );
       Navigator.pop(context); // Kembali ke RotiScreen
     } catch (e) {
@@ -102,7 +127,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       appBar: AppBar(
         title: Text(widget.showHistory ? 'Riwayat Pesanan' : 'Keranjang Belanja'),
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             image: DecorationImage(
               image: AssetImage('assets/appwrite_logo.png'),
               fit: BoxFit.contain,
@@ -112,7 +137,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: widget.showHistory
             ? _buildOrderHistory()
             : _buildCart(),
@@ -122,7 +147,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
 
   Widget _buildCart() {
     if (widget.cart.isEmpty) {
-      return Center(child: Text('Keranjang kosong!'));
+      return const Center(child: Text('Keranjang kosong!'));
     }
 
     return Column(
@@ -141,7 +166,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
                 title: Text('${entry.key} x${entry.value}'),
                 subtitle: Text('Rp ${totalHarga.toStringAsFixed(2)}'),
                 trailing: IconButton(
-                  icon: Icon(Icons.remove_circle),
+                  icon: const Icon(Icons.remove_circle),
                   onPressed: () {
                     setState(() {
                       if (widget.cart[entry.key]! > 1) {
@@ -158,18 +183,18 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
         ),
         TextField(
           controller: _nameController,
-          decoration: InputDecoration(labelText: 'Nama'),
+          decoration: const InputDecoration(labelText: 'Nama'),
         ),
         TextField(
           controller: _alamatController,
-          decoration: InputDecoration(labelText: 'Alamat'),
+          decoration: const InputDecoration(labelText: 'Alamat'),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         ElevatedButton(
           onPressed: _isLoading ? null : () => _checkout(context),
           child: _isLoading
-              ? CircularProgressIndicator(color: Colors.white)
-              : Text('Checkout'),
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text('Checkout'),
         ),
       ],
     );
@@ -177,7 +202,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
 
   Widget _buildOrderHistory() {
     if (widget.orderHistory.isEmpty) {
-      return Center(child: Text('Riwayat pesanan kosong!'));
+      return const Center(child: Text('Riwayat pesanan kosong!'));
     }
 
     return ListView.builder(
@@ -185,7 +210,7 @@ class _TransaksiScreenState extends State<TransaksiScreen> {
       itemBuilder: (context, index) {
         final order = widget.orderHistory[index];
         return Card(
-          margin: EdgeInsets.symmetric(vertical: 8.0),
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
           child: ListTile(
             title: Text('Pesanan #${order['id']}'),
             subtitle: Column(
